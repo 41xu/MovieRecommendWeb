@@ -137,7 +137,7 @@ def recommend_movie():
 
 
 def search_form(request):
-    return render_to_response('recommend/login.html')
+    return render_to_response('recommend.html')
 
 def search(request):
     request.encoding='utf-8'

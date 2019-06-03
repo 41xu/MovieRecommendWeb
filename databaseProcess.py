@@ -37,4 +37,8 @@ def saveToDatabase():
         )
         score.save()
 
-saveToDatabase()
+#
+# if __name__=='__main__':
+#     id=3711760
+#     res=Movies.objects.get(id=id)
+#     print(res.id,res.title)
