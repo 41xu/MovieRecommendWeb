@@ -23,4 +23,5 @@ urlpatterns = [
     path('recommend/',include('recommend.urls')),
     path('login/',include('login.urls')),
     path('register/',include('register.urls')),
+    path('userInfo/',include('userInfo.urls')),
 ]

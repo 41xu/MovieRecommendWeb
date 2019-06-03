@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'recommend',
     'login',
     'register',
+    'userInfo'
 ]
 
 MIDDLEWARE = [

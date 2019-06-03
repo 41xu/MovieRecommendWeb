@@ -175,3 +175,4 @@ def search(request):
         message="你提交了空表单"
     return HttpResponse(message)
 
+
