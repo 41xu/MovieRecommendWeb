@@ -141,6 +141,7 @@ def search_form(request):
 
 def search(request):
     request.encoding='utf-8'
+
     if 'user_id' in request.GET:
 
         dataMat=preprocess()
