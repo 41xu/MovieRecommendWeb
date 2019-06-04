@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from numpy import linalg as la
 import random
+from django.views.decorators.csrf import csrf_exempt
+from .models import Movies
 
 # 读入数据的存储方式为行表示用户列表示电影值表示用户评分
 # 由于用户数大于电影数，因此我们选择基于电影的相似度做推荐
@@ -139,40 +141,67 @@ def recommend_movie():
 def search_form(request):
     return render_to_response('recommend.html')
 
+
+@csrf_exempt
 def search(request):
-    request.encoding='utf-8'
+    if request.method == "POST":
 
-    if 'user_id' in request.GET:
+        dataMat = preprocess()
+        xformedItems = SVD(dataMat)
+        SIM = get_sim(xformedItems)
+        user_id = int(request.POST.get('user_id'))
+        # message="你搜索的内容为："+request.GET['user_id']
+        # point_user=int(request.GET['user_id'])
+        # message+="\n经过查询之后这个id对应的用户名称是："+user_reindex[point_user]
+        # message+="\n"
+        user_name=user_reindex[user_id]
+        REC = recommend(SIM, dataMat, user_id)
+        result = []
+        for i in range(0, 5):
+            result.append(movie_reindex[REC[i][0]])  # result中是推荐的电影id
+        movie_dic=[]
 
-        dataMat=preprocess()
-        xformedItems=SVD(dataMat)
-        SIM=get_sim(xformedItems)
-        message="你搜索的内容为："+request.GET['user_id']
-        point_user=int(request.GET['user_id'])
-        message+="\n经过查询之后这个id对应的用户名称是："+user_reindex[point_user]
-        message+="\n"
-        REC=recommend(SIM,dataMat,point_user)
-        result=[]
-        for i in range(0,5):
-            result.append(movie_reindex[REC[i][0]])
-        result = iter(result)
-        info = []
-        cur = next(result)
-        while len(info) < 5:
-            for i in range(len(data)):
-                if data.loc[i, 'id'] == cur:
-                    info.append(data.loc[i, ['id', 'title', 'year', 'director', 'writer', 'actor', 'type',
-                                             'country', 'language', 'length', 'score']])
-                    try:
-                        cur = next(result)
-                    except:
-                        break
-                    break
-        message+="以下是为您推荐的电影！"
-        message+=str(info)
-
-    else:
-        message="你提交了空表单"
-    return HttpResponse(message)
+        for i in range(5):
+            movie = Movies.objects.get(id=result[i])
+            movie_dic.append(
+                {"id":movie.id,
+                 "title":movie.title,
+                 "type":movie.type,
+                 "year":movie.year,
+                 "director":movie.director,
+                 "actor":movie.actor,
+                 "writer":movie.writer,
+                 "country":movie.country,
+                 "language":movie.language,
+                 "length":movie.length,
+                 "score":movie.score
 
 
+                 }
+            )
+
+
+        return render_to_response("recommend.html",{"flag":True,"movie_dic":movie_dic,"userid":user_id ,"username":user_name})
+    return render_to_response("recommend.html", {
+        "id": ['null']
+    })
+
+    #     result = iter(result)
+    #     info = []
+    #     cur = next(result)
+    #     while len(info) < 5:
+    #         for i in range(len(data)):
+    #             if data.loc[i, 'id'] == cur:
+    #                 info.append(data.loc[i, ['id', 'title', 'year', 'director', 'writer', 'actor', 'type',
+    #                                          'country', 'language', 'length', 'score']])
+    #                 try:
+    #                     cur = next(result)
+    #                 except:
+    #                     break
+    #                 break
+    #     message+="以下是为您推荐的电影！"
+    #     message+=str(info)
+    #
+    # else:
+    #     message="你提交了空表单"
+    # return HttpResponse(message)
